@@ -74,18 +74,23 @@ export async function action({ request }: ActionFunctionArgs) {
               console.log(
                 "================================================================"
               );
-              console.log("prompt", prompt);
+              console.log(`prompt\n${prompt}`);
               console.log(
-                "================================================================"
+                "================================================================\n以下、回答内容\n"
               );
 
               // ストリームの処理
               for await (const chunk of completion) {
                 const content = chunk.choices[0]?.delta?.content || "";
                 if (content) {
+                  // コンソールに回答内容を出力
+                  process.stdout.write(content);
                   controller.enqueue(encoder.encode(content));
                 }
               }
+              console.log(
+                "\n================================================================"
+              );
             } catch (error) {
               console.error("Stream error:", error);
               controller.error(error);
