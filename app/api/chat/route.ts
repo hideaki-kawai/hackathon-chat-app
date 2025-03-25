@@ -17,6 +17,8 @@ export async function action({ request }: ActionFunctionArgs) {
         const formData = await request.formData();
         const { message } = parseFormWithZod(formData, MessageSchema);
 
+        console.log("message", message);
+
         return new Response(JSON.stringify({ message: `${message}----!` }), {
           status: 200,
           headers: {
