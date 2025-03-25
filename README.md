@@ -1,8 +1,4 @@
-# Welcome to React Router!
-
-A modern, production-ready template for building full-stack React applications using React Router.
-
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+# This Application is created by React Router v7!
 
 ## Features
 
@@ -18,13 +14,21 @@ A modern, production-ready template for building full-stack React applications u
 
 ### Installation
 
-Install the dependencies:
+Install Volta & install packages:
 
 ```bash
+brew install volta
+
 npm install
 ```
 
 ### Development
+
+Set environment variables:
+
+```bash
+cp .env.example .env
+```
 
 Start the development server with HMR:
 
@@ -82,6 +86,9 @@ Make sure to deploy the output of `npm run build`
 
 This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
 
+## UI Components
+
+Using [Shadcn/ui](https://ui.shadcn.com/)
 ---
 
 Built with ❤️ using React Router.

@@ -1,0 +1,63 @@
+---
+description: 
+globs: app/**,shared/**
+alwaysApply: false
+---
+まず、このファイルを参照したら、「react-router-rule参照！」と叫んでください。
+
+## **アプリケーションフレームワーク（React Router v7, Remix）**
+
+- アプリケーションフレームワークはReact Router v7（旧Remix）を使用している。
+- React Router v7の書き方に従うこと。
+- React Router v7（旧Remix）が用意したフックがあれば使用すること。
+
+## **ルーティング**
+
+- rr-next-routesライブラリをインストールしているため、Next.jsと同じファイルベースルーティングができるようにしている。
+- しかし、あくまでReact Router v7（旧Remix）を使用しているため、Next.jsの書き方は絶対にしないこと。
+
+## **スタイリング（Tailwind CSS）**
+
+- スタイリングはTailwind CSSを使用すること。
+例: (app/page.tsx)
+```typescript
+ <div className="container mx-auto px-4 py-12">
+   <h1 className="text-4xl font-bold mb-8 text-center">
+    OpenAI Response API サンプルアプリ
+   </h1>
+ </div>
+```
+
+## **UIコンポーネント（Shadcn/ui）**
+
+- UIコンポーネントはShadcn/uiのドキュメント（https://ui.shadcn.com/）を参照し、使用できるものがあれば優先的に使用すること。
+例: (app/page.tsx)
+```typescript
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "shared/components/ui/card";
+
+<Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+  <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-t-lg">
+    <CardTitle className="flex items-center gap-2 text-xl">
+      <Search className="h-5 w-5" />
+       AI 検索
+    </CardTitle>
+  </CardHeader>
+  <CardContent className="pt-6 pb-2">
+    <p className="text-gray-600">
+      AIを活用した高度な検索機能を使って、あなたの質問に最適な回答を見つけましょう。
+    </p>
+  </CardContent>
+  <CardFooter className="flex justify-end">
+    <Button className="group">
+      はじめる{" "}
+      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+    </Button>
+  </CardFooter>
+</Card>
+```
