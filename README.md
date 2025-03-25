@@ -1,5 +1,9 @@
 # This Application is created by React Router v7!
 
+## Routing
+
+This application uses file-based routing with the same rules as Next.js app router, powered by **rr-next-routes**.
+
 ## Features
 
 - 🚀 Server-side rendering
