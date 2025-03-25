@@ -61,3 +61,9 @@ import {
   </CardFooter>
 </Card>
 ```
+
+## **実装の注意**
+
+- メインのコンポーネントはexport default functionで作成すること。
+- 関数にはTSDocをつけること。
+- コンポーネントの中で宣言している関数にもTSDocをつけること。
