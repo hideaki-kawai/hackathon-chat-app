@@ -34,6 +34,7 @@ export async function action({ request }: ActionFunctionArgs) {
     switch (request.method) {
       case "POST":
         const formData = await request.formData();
+
         const { prompt, urls } = parseFormWithZod(
           formData,
           RequestPromptSchema
@@ -47,11 +48,15 @@ export async function action({ request }: ActionFunctionArgs) {
               let completion;
 
               if (urls && urls.length > 0) {
+                console.log("URLs:", urls);
+
+                // プロンプトを生成（domain specificなクエリを含む）
+                const generatedPrompt = getPrompt(prompt, urls);
+                console.log("Generated prompt:", generatedPrompt);
+
                 completion = await openaiClient.chat.completions.create({
                   model: LLM_MODEL.GPT_4O_MINI_SEARCH_PREVIEW,
-                  messages: [
-                    { role: "user", content: getPrompt(prompt, urls) },
-                  ],
+                  messages: [{ role: "user", content: generatedPrompt }],
                   web_search_options: {
                     search_context_size: "high",
                     user_location: {
@@ -64,6 +69,7 @@ export async function action({ request }: ActionFunctionArgs) {
                   stream: true,
                 });
               } else {
+                console.log("Using regular model without URLs");
                 completion = await openaiClient.chat.completions.create({
                   model: LLM_MODEL.GPT_4O_MINI,
                   messages: [{ role: "user", content: prompt }],
@@ -71,10 +77,6 @@ export async function action({ request }: ActionFunctionArgs) {
                 });
               }
 
-              console.log(
-                "================================================================"
-              );
-              console.log(`prompt\n${prompt}`);
               console.log(
                 "================================================================\n以下、回答内容\n"
               );
@@ -85,6 +87,7 @@ export async function action({ request }: ActionFunctionArgs) {
                 if (content) {
                   // コンソールに回答内容を出力
                   process.stdout.write(content);
+                  // ストリームに回答内容を出力
                   controller.enqueue(encoder.encode(content));
                 }
               }
