@@ -89,6 +89,7 @@ This template comes with [Tailwind CSS](https://tailwindcss.com/) already config
 ## UI Components
 
 Using [Shadcn/ui](https://ui.shadcn.com/)
+
 ---
 
 Built with ❤️ using React Router.
