@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from "react-router";
-import { parseFormWithZod } from "shared/lib/zod";
+import { parseFormWithZod } from "shared/utils/parse-form-with-zod";
 import { z } from "zod";
 import { openaiClient } from "shared/lib/openai";
 import LLM_MODEL from "shared/constants/llm-model";
