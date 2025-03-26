@@ -1,5 +1,5 @@
 import type { Route } from ".react-router/types/app/+types/root";
-import { Search, ArrowRight, Send } from "lucide-react";
+import { Search, ArrowRight, Send, Globe } from "lucide-react";
 import {
   Form,
   Link,
@@ -180,9 +180,19 @@ export default function Chat() {
 
   return (
     <div className="container mx-auto px-4 flex flex-col h-screen max-w-4xl">
-      <Button asChild>
-        <Link to="/chats/modal">Open</Link>
-      </Button>
+      <div className="flex justify-end mb-2">
+        <Button
+          asChild
+          size="lg"
+          variant="default"
+          className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-full"
+        >
+          <Link to="/chats/modal" className="flex items-center gap-2">
+            <Globe className="h-5 w-5" />
+            <span>グローバルURL</span>
+          </Link>
+        </Button>
+      </div>
       <Card className="flex-1 flex flex-col overflow-hidden shadow-xl border-gray-200">
         <CardContent className="flex-1 p-0 overflow-hidden">
           <ChatMessageList className="pb-20">
