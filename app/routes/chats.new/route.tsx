@@ -134,6 +134,9 @@ export default function Chat() {
     e.preventDefault();
     if (!inputValue.trim() || isSubmitting) return;
 
+    // 入力をクリア
+    setInputValue("");
+
     // ユーザーメッセージを追加
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -147,9 +150,6 @@ export default function Chat() {
     const formData = new FormData(formRef.current!);
     formData.set("prompt", inputValue.trim());
     submit(formData, { method: "post" });
-
-    // 入力をクリア
-    setInputValue("");
   };
 
   // エンターキーで送信（シフト+エンターで改行）
@@ -165,6 +165,7 @@ export default function Chat() {
     if (!isSubmitting) {
       inputRef.current?.focus();
     }
+    setInputValue("");
   }, [isSubmitting]);
 
   // レスポンスを受け取った場合はメッセージリストに追加
@@ -183,8 +184,8 @@ export default function Chat() {
   }, [actionData, isSubmitting]);
 
   return (
-    <div className="container mx-auto px-4 flex flex-col h-screen max-w-4xl">
-      <div className="flex justify-end mb-2">
+    <div className="container mx-auto px-2 flex flex-col h-screen max-w-4xl">
+      <div className="flex justify-end my-2">
         <Button
           asChild
           size="lg"
@@ -197,7 +198,7 @@ export default function Chat() {
           </Link>
         </Button>
       </div>
-      <Card className="flex-1 flex flex-col overflow-hidden shadow-xl border-gray-200">
+      <Card className="flex-1 flex flex-col shadow-xl border-gray-200">
         <CardContent className="flex-1 p-0 overflow-hidden">
           <ChatMessageList className="pb-20">
             {messages.map((message) => (

@@ -50,7 +50,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               />
             </header>
             <div className="flex-1 overflow-y-auto">
-              <div className="flex flex-col gap-4 p-4">{children}</div>
+              <div className="flex flex-col gap-4 px-2">{children}</div>
             </div>
           </SidebarInset>
         </SidebarProvider>
