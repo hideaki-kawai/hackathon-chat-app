@@ -1,6 +1,7 @@
 import * as React from "react";
-
-import { SearchForm } from "shared/components/search-form";
+import { Link } from "react-router";
+import { PlusCircle } from "lucide-react";
+import { Button } from "shared/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -16,40 +17,35 @@ import {
 
 // This is sample data.
 const data = {
-  versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
   navMain: [
     {
-      title: "Building Your Application",
+      title: "チャット",
       url: "#",
       items: [
         {
-          title: "Routing",
+          title: "チャット1",
           url: "#",
+          isActive: false,
         },
         {
-          title: "Data Fetching",
+          title: "チャット2",
           url: "#",
-          isActive: true,
+          isActive: false,
         },
         {
-          title: "Rendering",
+          title: "チャット3",
           url: "#",
+          isActive: false,
         },
         {
-          title: "Caching",
+          title: "チャット4",
           url: "#",
+          isActive: false,
         },
         {
-          title: "Styling",
+          title: "チャット5",
           url: "#",
-        },
-        {
-          title: "Optimizing",
-          url: "#",
-        },
-        {
-          title: "Configuring",
-          url: "#",
+          isActive: false,
         },
       ],
     },
@@ -60,27 +56,45 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <SearchForm />
+        <Button
+          asChild
+          variant="secondary"
+          className="w-56 bg-zinc-800 hover:bg-zinc-700 text-white"
+        >
+          <Link to="/chats/new" className="flex items-center justify-center">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            New
+          </Link>
+        </Button>
       </SidebarHeader>
-      <SidebarContent>
-        {/* We create a SidebarGroup for each parent. */}
-        {data.navMain.map((item) => (
-          <SidebarGroup key={item.title}>
-            <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {item.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={item.isActive}>
-                      <a href={item.url}>{item.title}</a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
-      </SidebarContent>
+      <div className="relative mt-5">
+        <div className="absolute inset-0 bg-gray-500/50 flex items-center justify-center z-50 pointer-events-none">
+          <span className="text-white font-semibold text-xl">Coming soon</span>
+        </div>
+        <SidebarContent>
+          {/* We create a SidebarGroup for each parent. */}
+          {data.navMain.map((item) => (
+            <SidebarGroup key={item.title}>
+              <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {item.items.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={item.isActive}
+                        disabled
+                      >
+                        <a href={item.url}>{item.title}</a>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
+        </SidebarContent>
+      </div>
       <SidebarRail />
     </Sidebar>
   );
