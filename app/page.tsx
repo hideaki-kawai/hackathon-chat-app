@@ -9,6 +9,9 @@ import {
   CardFooter,
 } from "shared/components/ui/card";
 import { Button } from "shared/components/ui/button";
+import { parseFormWithZod } from "shared/utils/parse-form-with-zod";
+import { createStreamResponse } from "shared/functions/create-stream-response";
+import { ChatRequestSchema } from "shared/schema/chat-request.schema";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -17,26 +20,55 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-// TODO: 最終的にroute.tsを統合する
 export async function action({ request }: ActionFunctionArgs) {
-  switch (request.method) {
-    case "POST":
-      let formData = await request.formData();
-      let message = formData.get("message");
+  try {
+    switch (request.method) {
+      case "POST":
+        const formData = await request.formData();
 
-      return new Response(JSON.stringify({ message: `${message}----!` }), {
-        status: 200,
+        // Zodを使用してフォームデータをパース
+        const { prompt, urls } = parseFormWithZod(formData, ChatRequestSchema);
+
+        // ストリームレスポンスを返す
+        return createStreamResponse(prompt, urls);
+
+      default:
+        return new Response(JSON.stringify({ message: "Method not allowed" }), {
+          status: 405,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+    }
+  } catch (error: any) {
+    // Zodのバリデーションエラーの場合
+    if (error.name === "ZodError" || error.issues) {
+      return new Response(
+        JSON.stringify({
+          error: error.issues[0].message,
+        }),
+        {
+          status: 400,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
+
+    // その他のエラーの場合
+    console.error("Unexpected error:", error);
+    return new Response(
+      JSON.stringify({
+        error: `予期せぬエラーが発生しました。${error.message}`,
+      }),
+      {
+        status: 500,
         headers: {
           "Content-Type": "application/json",
         },
-      });
-    default:
-      return new Response(JSON.stringify({ message: "Method not allowed" }), {
-        status: 405,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      }
+    );
   }
 }
 

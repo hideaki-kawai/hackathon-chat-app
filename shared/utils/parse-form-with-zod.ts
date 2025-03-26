@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+/**
+ * FormDataとZodスキーマを使用して、型付きのデータを取得する
+ *
+ * 配列パラメータ（urls[]など）も適切に処理します
+ *
+ * @param formData フォームデータ
+ * @param schema Zodスキーマ
+ * @returns 型付きデータ
+ */
 export const parseFormWithZod = <T>(
   formData: FormData,
   schema: z.ZodSchema<T>

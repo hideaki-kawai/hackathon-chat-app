@@ -65,5 +65,9 @@ import {
 ## **実装の注意**
 
 - メインのコンポーネントはexport default functionで作成すること。
+- コンポーネントではない関数については、`export const xxx = () =>` のようなアロー関数で作成すること。
 - 関数にはTSDocをつけること。
 - コンポーネントの中で宣言している関数にもTSDocをつけること。
+- 新たに作るファイルの命名は**ケバブケース**で作成すること。
+例: shared/utils/parse-form-with-zod.ts
+
