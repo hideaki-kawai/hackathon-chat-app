@@ -59,7 +59,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <Button
           asChild
           variant="secondary"
-          className="w-56 bg-zinc-800 hover:bg-zinc-700 text-white"
+          className="w-full px-3 bg-zinc-800 hover:bg-zinc-700 text-white"
         >
           <Link to="/chats/new" className="flex items-center justify-center">
             <PlusCircle className="mr-2 h-4 w-4" />
@@ -67,7 +67,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </Link>
         </Button>
       </SidebarHeader>
-      <div className="relative mt-5">
+      <div className="relative mt-5 mx-3">
         <div className="absolute inset-0 bg-gray-500/50 flex items-center justify-center z-50 pointer-events-none">
           <span className="text-white font-semibold text-xl">Coming soon</span>
         </div>

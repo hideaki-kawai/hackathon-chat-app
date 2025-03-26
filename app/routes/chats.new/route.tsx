@@ -125,7 +125,11 @@ export default function Chat() {
     }
   }, []);
 
-  // フォーム送信ハンドラー
+  /**
+   * フォーム送信ハンドラー
+   * @param e
+   * @returns
+   */
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!inputValue.trim() || isSubmitting) return;
@@ -210,7 +214,13 @@ export default function Chat() {
                   fallback={message.role === "assistant" ? "AI" : "ME"}
                 />
                 <div className="flex flex-col gap-1">
-                  <ChatBubbleMessage>{message.content}</ChatBubbleMessage>
+                  <ChatBubbleMessage
+                    className={
+                      message.role === "user" ? "bg-blue-100" : "bg-gray-100"
+                    }
+                  >
+                    {message.content}
+                  </ChatBubbleMessage>
                   <div className="text-xs text-gray-500">
                     {message.timestamp}
                   </div>
@@ -220,7 +230,7 @@ export default function Chat() {
             {isSubmitting && (
               <ChatBubble variant="received">
                 <ChatBubbleAvatar src="/assistant-avatar.png" fallback="AI" />
-                <ChatBubbleMessage isLoading />
+                <ChatBubbleMessage isLoading className="bg-gray-100" />
               </ChatBubble>
             )}
           </ChatMessageList>
