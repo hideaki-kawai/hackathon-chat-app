@@ -13,8 +13,8 @@ alwaysApply: false
 
 ## **ルーティング**
 
-- rr-next-routesライブラリをインストールしているため、Next.jsと同じファイルベースルーティングができるようにしている。
-- しかし、あくまでReact Router v7（旧Remix）を使用しているため、Next.jsの書き方は絶対にしないこと。
+- @react-router/fs-routes を使用していてファイルベースのルーティングを採用しているため、app/routes.tsにルーティングの設定は不要。
+- 既存の実装に合わせること。
 
 ## **スタイリング（Tailwind CSS）**
 

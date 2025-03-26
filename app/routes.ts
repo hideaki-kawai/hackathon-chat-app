@@ -1,6 +1,6 @@
 import { type RouteConfig } from "@react-router/dev/routes";
-import { nextRoutes } from "rr-next-routes";
+import { flatRoutes } from "@react-router/fs-routes";
 
-const routes = nextRoutes({ print: "info" });
-
-export default routes satisfies RouteConfig;
+export default flatRoutes({
+  ignoredRouteFiles: ["**/*.test.*"], // 無視するファイルパターンを設定
+}) satisfies RouteConfig;
