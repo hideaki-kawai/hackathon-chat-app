@@ -11,9 +11,9 @@ import {
 } from "react-router";
 import { Card, CardContent, CardFooter } from "shared/components/ui/card";
 import { Button } from "shared/components/ui/button";
-import { parseFormWithZod } from "shared/utils/parse-form-with-zod";
-import { createStreamResponse } from "shared/functions/create-stream-response";
-import { ChatRequestSchema } from "shared/schema/chat-request.schema";
+import { openaiClient } from "shared/lib/openai";
+import LLM_MODEL from "shared/constants/llm-model";
+import { getPrompt } from "~/routes/api.chat/prompt";
 import { ChatMessageList } from "shared/components/chat/chat-message-list";
 import {
   ChatBubble,
@@ -31,25 +31,69 @@ export function meta({}: Route.MetaArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
-    switch (request.method) {
-      case "POST":
-        const formData = await request.formData();
+    const formData = await request.formData();
 
-        // Zodを使用してフォームデータをパース
-        const { prompt, urls } = parseFormWithZod(formData, ChatRequestSchema);
+    const prompt = formData.get("prompt") as string;
+    const urls = formData.getAll("urls") as string[];
 
-        console.log(prompt, urls);
+    console.log(prompt, urls);
 
-        // ストリームレスポンスを返す
-        return createStreamResponse(prompt, urls);
+    // 非ストリーミングレスポンスの実装に変更
+    try {
+      let completion;
 
-      default:
-        return new Response(JSON.stringify({ message: "Method not allowed" }), {
-          status: 405,
+      if (urls && urls.length > 0) {
+        console.log("URLs:", urls);
+
+        // プロンプトを生成（domain specificなクエリを含む）
+        const generatedPrompt = getPrompt(prompt, urls);
+        console.log("Generated prompt:", generatedPrompt);
+
+        completion = await openaiClient.chat.completions.create({
+          model: LLM_MODEL.GPT_4O_SEARCH_PREVIEW,
+          messages: [{ role: "user", content: generatedPrompt }],
+          web_search_options: {
+            search_context_size: "high",
+            user_location: {
+              type: "approximate",
+              approximate: {
+                country: "JP",
+              },
+            },
+          },
+        });
+      } else {
+        console.log("Using regular model without URLs");
+        completion = await openaiClient.chat.completions.create({
+          model: LLM_MODEL.GPT_4O_MINI,
+          messages: [{ role: "user", content: prompt }],
+        });
+      }
+
+      const content = completion.choices[0]?.message?.content || "";
+
+      console.log(
+        "================================================================\n以下、回答内容\n",
+        content,
+        "\n================================================================"
+      );
+
+      return new Response(JSON.stringify({ content }), {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (error) {
+      console.error("API request error:", error);
+      return new Response(
+        JSON.stringify({ error: "APIリクエストでエラーが発生しました" }),
+        {
+          status: 500,
           headers: {
             "Content-Type": "application/json",
           },
-        });
+        }
+      );
     }
   } catch (error: any) {
     // Zodのバリデーションエラーの場合
@@ -91,10 +135,16 @@ type Message = {
   timestamp: string;
 };
 
+// actionDataの型定義
+type ActionResponse = {
+  content?: string;
+  error?: string;
+};
+
 export default function Chat() {
   const submit = useSubmit();
   const navigation = useNavigation();
-  const actionData = useActionData();
+  const actionData = useActionData<ActionResponse>();
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [urls, setUrls] = useState<string[]>([]);
@@ -107,7 +157,10 @@ export default function Chat() {
     },
   ]);
   const [inputValue, setInputValue] = useState("");
-  const isSubmitting = navigation.state === "submitting";
+  const isSubmitting =
+    navigation.state === "submitting" || navigation.state === "loading";
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // クライアントサイドでのみタイムスタンプを設定する & ローカルストレージからメッセージを取得する
   useEffect(() => {
@@ -168,6 +221,29 @@ export default function Chat() {
     }
   }, [messages]);
 
+  // actionDataの変更を検知してレスポンスを処理
+  useEffect(() => {
+    if (actionData && !isSubmitting) {
+      setIsProcessing(false);
+
+      if (actionData.error) {
+        setErrorMessage(actionData.error);
+        return;
+      }
+
+      if (actionData.content) {
+        // AIの応答をメッセージリストに追加
+        const assistantMessage: Message = {
+          id: Date.now().toString(),
+          content: actionData.content,
+          role: "assistant",
+          timestamp: new Date().toLocaleTimeString(),
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+      }
+    }
+  }, [actionData, isSubmitting]);
+
   /**
    * フォーム送信ハンドラー
    * @param e
@@ -175,7 +251,13 @@ export default function Chat() {
    */
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!inputValue.trim() || isSubmitting) return;
+    if (!inputValue.trim() || isSubmitting || isProcessing) return;
+
+    // エラーメッセージをクリア
+    setErrorMessage("");
+
+    // 処理中フラグをセット
+    setIsProcessing(true);
 
     // 入力をクリア
     setInputValue("");
@@ -215,26 +297,10 @@ export default function Chat() {
 
   // 送信後にテキストエリアにフォーカスを戻す
   useEffect(() => {
-    if (!isSubmitting) {
+    if (!isSubmitting && !isProcessing) {
       inputRef.current?.focus();
     }
-    setInputValue("");
-  }, [isSubmitting]);
-
-  // レスポンスを受け取った場合はメッセージリストに追加
-  useEffect(() => {
-    if (actionData && !isSubmitting) {
-      // 応答をメッセージリストに追加
-      const assistantMessage: Message = {
-        id: Date.now().toString(),
-        content:
-          actionData.response || "申し訳ありません、エラーが発生しました。",
-        role: "assistant",
-        timestamp: new Date().toLocaleTimeString(),
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
-    }
-  }, [actionData, isSubmitting]);
+  }, [isSubmitting, isProcessing]);
 
   /**
    * 会話履歴をクリアする
@@ -307,7 +373,7 @@ export default function Chat() {
                 </div>
               </ChatBubble>
             ))}
-            {isSubmitting && (
+            {(isSubmitting || isProcessing) && (
               <ChatBubble variant="received">
                 <ChatBubbleAvatar src="/assistant-avatar.png" fallback="AI" />
                 <ChatBubbleMessage isLoading className="bg-gray-100" />
@@ -332,12 +398,13 @@ export default function Chat() {
               placeholder="メッセージを入力..."
               className="flex-1 resize-none rounded-md border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent min-h-[50px] max-h-[150px] h-auto transition-all duration-200"
               rows={1}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isProcessing}
+              required
             />
             <Button
               type="submit"
               className="rounded-full h-10 w-10 p-0 flex items-center justify-center"
-              disabled={isSubmitting || !inputValue.trim()}
+              disabled={isSubmitting || isProcessing || !inputValue.trim()}
             >
               <Send className="h-5 w-5" />
             </Button>
