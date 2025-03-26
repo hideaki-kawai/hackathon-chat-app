@@ -1,5 +1,14 @@
-import { Form, Link, useNavigate, type ActionFunctionArgs } from "react-router";
+import {
+  Form,
+  Link,
+  useNavigate,
+  type ActionFunctionArgs,
+  redirect,
+} from "react-router";
 import { Button } from "shared/components/ui/button";
+import { Input } from "shared/components/ui/input";
+import { PlusCircle, Trash2 } from "lucide-react";
+import { useState } from "react";
 import {
   Dialog,
   DialogHeader,
@@ -12,16 +21,61 @@ import {
 
 export async function clientAction({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const url = formData.get("url");
-  console.log(url);
-  return null;
+  const urls = formData.getAll("url").filter((url) => url !== "");
+
+  // ブラウザのlocalStorageに保存
+  if (typeof window !== "undefined") {
+    localStorage.setItem("url", JSON.stringify(urls));
+  }
+
+  // モーダルを閉じる
+  return redirect("/");
 }
 
 export default function UrlModal() {
   const navigate = useNavigate();
+  const [urls, setUrls] = useState<string[]>([""]);
 
+  /**
+   * モーダルを閉じる
+   */
   const handleClose = () => {
     navigate(-1);
+  };
+
+  /**
+   * URLフィールドを追加する
+   */
+  const addUrlField = () => {
+    setUrls([...urls, ""]);
+  };
+
+  /**
+   * 特定のインデックスのURLを更新する
+   * @param index - 更新するURLのインデックス
+   * @param value - 新しいURL値
+   */
+  const updateUrl = (index: number, value: string) => {
+    const newUrls = [...urls];
+    newUrls[index] = value;
+    setUrls(newUrls);
+  };
+
+  /**
+   * 特定のインデックスのURLを削除する
+   * @param index - 削除するURLのインデックス
+   */
+  const removeUrl = (index: number) => {
+    // URL配列が1つしかない場合は空にするだけ
+    if (urls.length === 1) {
+      setUrls([""]);
+      return;
+    }
+
+    // 指定されたインデックスのURLを削除
+    const newUrls = [...urls];
+    newUrls.splice(index, 1);
+    setUrls(newUrls);
   };
 
   return (
@@ -32,19 +86,54 @@ export default function UrlModal() {
           <DialogContent className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
             <DialogHeader>
               <DialogTitle>URL</DialogTitle>
-              <DialogDescription>URLを入力してください</DialogDescription>
+              <DialogDescription>
+                参照したいサイトのURLを入力してください。
+              </DialogDescription>
             </DialogHeader>
             <Form method="post" className="space-y-4 mt-4">
               <div className="space-y-2">
-                <input
-                  type="text"
-                  name="url"
-                  placeholder="https://example.com"
-                  className="w-full p-2 border rounded-md"
-                />
+                {urls.map((url, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      name="url"
+                      placeholder="https://example.com"
+                      value={url}
+                      onChange={(e) => updateUrl(index, e.target.value)}
+                      className="w-full"
+                    />
+                    <div className="flex gap-1">
+                      {urls.length > 1 && url !== "" && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeUrl(index)}
+                        >
+                          <Trash2 className="h-5 w-5 text-red-500" />
+                        </Button>
+                      )}
+                      {index === urls.length - 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={addUrlField}
+                        >
+                          <PlusCircle className="h-5 w-5" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
               <div className="flex justify-end space-x-2">
-                <Button type="submit">Create</Button>
+                <Button
+                  type="submit"
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  登録
+                </Button>
                 <Button variant="outline" onClick={handleClose}>
                   Close
                 </Button>

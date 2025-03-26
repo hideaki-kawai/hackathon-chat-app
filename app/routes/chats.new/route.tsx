@@ -106,11 +106,24 @@ export default function Chat() {
       id: "1",
       content: "こんにちは、どのようにお手伝いできますか？",
       role: "assistant",
-      timestamp: new Date().toLocaleTimeString(),
+      timestamp: "",
     },
   ]);
   const [inputValue, setInputValue] = useState("");
   const isSubmitting = navigation.state === "submitting";
+
+  // クライアントサイドでのみタイムスタンプを設定する
+  useEffect(() => {
+    if (messages[0].timestamp === "") {
+      setMessages((prev) =>
+        prev.map((msg, idx) =>
+          idx === 0
+            ? { ...msg, timestamp: new Date().toLocaleTimeString() }
+            : msg
+        )
+      );
+    }
+  }, []);
 
   // フォーム送信ハンドラー
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
