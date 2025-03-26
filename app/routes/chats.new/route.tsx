@@ -1,5 +1,5 @@
 import type { Route } from ".react-router/types/app/+types/root";
-import { Send, Globe } from "lucide-react";
+import { Send, Globe, Trash2 } from "lucide-react";
 import {
   Form,
   Link,
@@ -37,6 +37,8 @@ export async function action({ request }: ActionFunctionArgs) {
 
         // Zodを使用してフォームデータをパース
         const { prompt, urls } = parseFormWithZod(formData, ChatRequestSchema);
+
+        console.log(prompt, urls);
 
         // ストリームレスポンスを返す
         return createStreamResponse(prompt, urls);
@@ -95,6 +97,7 @@ export default function Chat() {
   const actionData = useActionData();
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [urls, setUrls] = useState<string[]>([]);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -106,9 +109,27 @@ export default function Chat() {
   const [inputValue, setInputValue] = useState("");
   const isSubmitting = navigation.state === "submitting";
 
-  // クライアントサイドでのみタイムスタンプを設定する
+  // クライアントサイドでのみタイムスタンプを設定する & ローカルストレージからメッセージを取得する
   useEffect(() => {
-    if (messages[0].timestamp === "") {
+    // ローカルストレージからメッセージを取得
+    const storedMessages = localStorage.getItem("messages");
+    if (storedMessages) {
+      try {
+        const parsedMessages = JSON.parse(storedMessages) as Message[];
+        setMessages(parsedMessages);
+      } catch (error) {
+        console.error("メッセージの解析に失敗しました:", error);
+        // 初期メッセージのタイムスタンプを設定
+        setMessages((prev) =>
+          prev.map((msg, idx) =>
+            idx === 0
+              ? { ...msg, timestamp: new Date().toLocaleTimeString() }
+              : msg
+          )
+        );
+      }
+    } else if (messages[0].timestamp === "") {
+      // ローカルストレージにメッセージがない場合は初期メッセージのタイムスタンプを設定
       setMessages((prev) =>
         prev.map((msg, idx) =>
           idx === 0
@@ -118,6 +139,34 @@ export default function Chat() {
       );
     }
   }, []);
+
+  // ローカルストレージからURLを取得する
+  useEffect(() => {
+    const storedUrls = localStorage.getItem("url");
+    if (storedUrls) {
+      try {
+        const parsedUrls = JSON.parse(storedUrls) as string[];
+        setUrls(parsedUrls);
+      } catch (error) {
+        console.error("URLの解析に失敗しました:", error);
+      }
+    }
+  }, []);
+
+  // urlsの変更を検知して実行される新しいuseEffect
+  useEffect(() => {
+    // urlsが更新されたらログに表示
+    if (urls.length > 0) {
+      console.log("更新されたurls:", urls);
+    }
+  }, [urls]);
+
+  // messagesが変更されたらローカルストレージに保存
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem("messages", JSON.stringify(messages));
+    }
+  }, [messages]);
 
   /**
    * フォーム送信ハンドラー
@@ -143,7 +192,17 @@ export default function Chat() {
     // フォームデータを作成して送信
     const formData = new FormData(formRef.current!);
     formData.set("prompt", inputValue.trim());
-    submit(formData, { method: "post" });
+
+    // 保存されているURLを追加
+    if (urls && urls.length > 0) {
+      urls.forEach((url) => {
+        if (url) {
+          formData.append("urls", url);
+        }
+      });
+    }
+
+    submit(formData, { method: "post", action: "." });
   };
 
   // エンターキーで送信（シフト+エンターで改行）
@@ -177,9 +236,35 @@ export default function Chat() {
     }
   }, [actionData, isSubmitting]);
 
+  /**
+   * 会話履歴をクリアする
+   */
+  const clearChatHistory = () => {
+    // ローカルストレージからメッセージを削除
+    localStorage.removeItem("messages");
+    // 初期メッセージだけを設定
+    setMessages([
+      {
+        id: Date.now().toString(),
+        content: "こんにちは、どのようにお手伝いできますか？",
+        role: "assistant",
+        timestamp: new Date().toLocaleTimeString(),
+      },
+    ]);
+  };
+
   return (
     <div className="container mx-auto px-2 flex flex-col h-screen max-w-4xl">
-      <div className="flex justify-end my-2">
+      <div className="flex justify-end gap-2 my-2">
+        <Button
+          onClick={clearChatHistory}
+          size="lg"
+          variant="destructive"
+          className="bg-gradient-to-r from-red-400 to-rose-500 hover:from-red-500 hover:to-rose-600 text-white rounded-full"
+        >
+          <Trash2 className="h-5 w-5" />
+          <span>会話履歴クリア</span>
+        </Button>
         <Button
           asChild
           size="lg"
@@ -234,6 +319,7 @@ export default function Chat() {
         <CardFooter className="p-4 border-t bg-white absolute bottom-0 left-0 right-0">
           <Form
             ref={formRef}
+            action="."
             onSubmit={handleSubmit}
             className="w-full flex gap-2 items-end"
           >
