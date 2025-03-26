@@ -1,5 +1,5 @@
 import type { Route } from ".react-router/types/app/+types/root";
-import { Search, ArrowRight, Send, Globe } from "lucide-react";
+import { Send, Globe } from "lucide-react";
 import {
   Form,
   Link,
@@ -9,13 +9,7 @@ import {
   useSubmit,
   type ActionFunctionArgs,
 } from "react-router";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "shared/components/ui/card";
+import { Card, CardContent, CardFooter } from "shared/components/ui/card";
 import { Button } from "shared/components/ui/button";
 import { parseFormWithZod } from "shared/utils/parse-form-with-zod";
 import { createStreamResponse } from "shared/functions/create-stream-response";
