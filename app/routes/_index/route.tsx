@@ -164,13 +164,13 @@ export default function Chat() {
   }, [actionData, isSubmitting]);
 
   return (
-    <div className="container mx-auto px-4 py-8 flex flex-col h-screen max-w-4xl">
+    <div className="container mx-auto px-4 flex flex-col h-screen max-w-4xl">
       <h1 className="text-3xl font-bold mb-6 text-center">
         AIチャットアシスタント
       </h1>
 
       <Card className="flex-1 flex flex-col overflow-hidden shadow-xl border-gray-200">
-        <CardHeader className="bg-gray-50 px-6 py-4 border-b">
+        <CardHeader className="bg-gray-50 px-6 border-b">
           <CardTitle className="text-lg flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
             サポートチャット
