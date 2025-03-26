@@ -1,66 +1,48 @@
 import type { ActionFunctionArgs } from "react-router";
-import { parseFormWithZod } from "shared/lib/zod";
-import { z } from "zod";
+import { parseFormWithZod } from "shared/utils/parse-form-with-zod";
+import { createStreamResponse } from "shared/functions/create-stream-response";
+import { ChatRequestSchema } from "shared/schema/chat-request.schema";
+import {
+  createResponse,
+  createErrorResponse,
+} from "shared/utils/create-response";
 
 /**
- * Zodスキーマを定義
- * メッセージは必須です
+ * チャットAPI
+ *
+ * 料金は、100万トークンあたり
+ * gpt-4o-search-preview
+ * Input：$2.50
+ * Output：$10.00
+ *
+ * gpt-4o-mini-search-preview
+ * Input：$0.15
+ * Output：$0.60
+ *
+ * @param request リクエスト
+ * @returns レスポンス
  */
-const MessageSchema = z.object({
-  message: z.string().min(1, "メッセージは必須です"),
-});
-
 export async function action({ request }: ActionFunctionArgs) {
   try {
     switch (request.method) {
       case "POST":
         const formData = await request.formData();
-        const { message } = parseFormWithZod(formData, MessageSchema);
-
-        console.log("message", message);
-
-        return new Response(JSON.stringify({ message: `${message}----!` }), {
-          status: 200,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const { prompt, urls } = parseFormWithZod(formData, ChatRequestSchema);
+        // 共通関数を使ってストリームレスポンスを返す
+        return createStreamResponse(prompt, urls);
       default:
-        return new Response(JSON.stringify({ message: "Method not allowed" }), {
-          status: 405,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        return createResponse({ message: "Method not allowed" }, 405);
     }
   } catch (error: any) {
     // Zodのバリデーションエラーの場合
     if (error.name === "ZodError" || error.issues) {
-      return new Response(
-        JSON.stringify({
-          error: "メッセージは必須です",
-        }),
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      return createErrorResponse(error.issues[0].message, 400);
     }
 
     // その他のエラーの場合
     console.error("Unexpected error:", error);
-    return new Response(
-      JSON.stringify({
-        error: "予期せぬエラーが発生しました",
-      }),
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+    return createErrorResponse(
+      `予期せぬエラーが発生しました。${error.message}`
     );
   }
 }
