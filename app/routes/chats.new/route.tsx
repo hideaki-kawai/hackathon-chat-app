@@ -160,7 +160,6 @@ export default function Chat() {
   const isSubmitting =
     navigation.state === "submitting" || navigation.state === "loading";
   const [isProcessing, setIsProcessing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
   const [lastEnterPress, setLastEnterPress] = useState<number | null>(null);
 
   // クライアントサイドでのみタイムスタンプを設定する & ローカルストレージからメッセージを取得する
@@ -228,7 +227,14 @@ export default function Chat() {
       setIsProcessing(false);
 
       if (actionData.error) {
-        setErrorMessage(actionData.error);
+        // エラーメッセージをアシスタントのメッセージとしてチャットに追加
+        const errorAsMessage: Message = {
+          id: Date.now().toString(),
+          content: `エラーが発生しました: ${actionData.error}`,
+          role: "assistant",
+          timestamp: new Date().toLocaleTimeString(),
+        };
+        setMessages((prev) => [...prev, errorAsMessage]);
         return;
       }
 
@@ -253,9 +259,6 @@ export default function Chat() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!inputValue.trim() || isSubmitting || isProcessing) return;
-
-    // エラーメッセージをクリア
-    setErrorMessage("");
 
     // 処理中フラグをセット
     setIsProcessing(true);
@@ -288,7 +291,10 @@ export default function Chat() {
     submit(formData, { method: "post", action: "." });
   };
 
-  // エンターキーで送信の処理を変更（エンター2回で送信）
+  /**
+   * エンターキーで送信（シフト+エンターで改行）
+   * @param e
+   */
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
