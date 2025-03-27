@@ -1,6 +1,6 @@
 import { openaiClient } from "shared/lib/openai";
 import LLM_MODEL from "shared/constants/llm-model";
-import { getPrompt } from "app/api/chat/prompt";
+import { getPrompt } from "shared/prompt/prompt";
 
 type CreateStreamOptions = {
   prompt: string;
@@ -44,6 +44,7 @@ const createOpenAIStream = async ({
           },
         },
         stream: true,
+        store: true,
       });
     } else {
       console.log("Using regular model without URLs");
@@ -51,6 +52,7 @@ const createOpenAIStream = async ({
         model: LLM_MODEL.GPT_4O_MINI,
         messages: [{ role: "user", content: prompt }],
         stream: true,
+        store: true,
       });
     }
 

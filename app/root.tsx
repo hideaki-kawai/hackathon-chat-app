@@ -2,12 +2,17 @@ import {
   isRouteErrorResponse,
   Links,
   Meta,
-  NavLink,
   Outlet,
   Scripts,
   ScrollRestoration,
 } from "react-router";
-
+import { AppSidebar } from "shared/components/app-sidebar";
+import { Separator } from "shared/components/ui/separator";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "shared/components/ui/sidebar";
 import type { Route } from "./+types/root";
 import "./app.css";
 
@@ -34,19 +39,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <header>
-          <nav>
-            <NavLink to="/" end>
-              ホーム
-            </NavLink>
-            <NavLink to="/trending" end>
-              トレンドのコンサート
-            </NavLink>
-            <NavLink to="/concerts">すべてのコンサート</NavLink>
-            <NavLink to="/account">アカウント</NavLink>
-          </nav>
-        </header>
-        {children}
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset className="flex flex-col h-screen">
+            <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 sticky top-0 bg-background z-10">
+              <SidebarTrigger className="-ml-1" />
+              <Separator
+                orientation="vertical"
+                className="mr-2 data-[orientation=vertical]:h-4"
+              />
+            </header>
+            <div className="flex-1 overflow-y-auto">
+              <div className="flex flex-col gap-4 px-2">{children}</div>
+            </div>
+          </SidebarInset>
+        </SidebarProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
