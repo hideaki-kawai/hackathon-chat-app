@@ -13,7 +13,7 @@ import { Card, CardContent, CardFooter } from "shared/components/ui/card";
 import { Button } from "shared/components/ui/button";
 import { openaiClient } from "shared/lib/openai";
 import LLM_MODEL from "shared/constants/llm-model";
-import { getPrompt } from "~/routes/api.chat/prompt";
+import { getPrompt } from "shared/prompt/prompt";
 import { ChatMessageList } from "shared/components/chat/chat-message-list";
 import {
   ChatBubble,

@@ -1,6 +1,6 @@
 import { openaiClient } from "shared/lib/openai";
 import LLM_MODEL from "shared/constants/llm-model";
-import { getPrompt } from "~/routes/api.chat/prompt";
+import { getPrompt } from "shared/prompt/prompt";
 
 type CreateStreamOptions = {
   prompt: string;
