@@ -7,8 +7,8 @@ import {
 } from "react-router";
 import { Button } from "shared/components/ui/button";
 import { Input } from "shared/components/ui/input";
-import { PlusCircle, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { PlusCircle, Trash2, X } from "lucide-react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogHeader,
@@ -35,6 +35,25 @@ export async function clientAction({ request }: ActionFunctionArgs) {
 export default function UrlModal() {
   const navigate = useNavigate();
   const [urls, setUrls] = useState<string[]>([""]);
+
+  /**
+   * コンポーネントマウント時にlocalStorageからURLを取得
+   */
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedUrls = localStorage.getItem("url");
+      if (storedUrls) {
+        try {
+          const parsedUrls = JSON.parse(storedUrls);
+          if (Array.isArray(parsedUrls) && parsedUrls.length > 0) {
+            setUrls(parsedUrls);
+          }
+        } catch (error) {
+          console.error("URLの解析に失敗しました:", error);
+        }
+      }
+    }
+  }, []);
 
   /**
    * モーダルを閉じる
@@ -69,6 +88,9 @@ export default function UrlModal() {
     // URL配列が1つしかない場合は空にするだけ
     if (urls.length === 1) {
       setUrls([""]);
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("url");
+      }
       return;
     }
 
@@ -76,6 +98,21 @@ export default function UrlModal() {
     const newUrls = [...urls];
     newUrls.splice(index, 1);
     setUrls(newUrls);
+
+    // localStorageも更新
+    if (typeof window !== "undefined") {
+      localStorage.setItem("url", JSON.stringify(newUrls));
+    }
+  };
+
+  /**
+   * 全てのURLをクリアする
+   */
+  const clearAllUrls = () => {
+    setUrls([""]);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("url");
+    }
   };
 
   return (
@@ -90,7 +127,25 @@ export default function UrlModal() {
                 参照したいサイトのURLを入力してください。
               </DialogDescription>
             </DialogHeader>
+
             <Form method="post" className="space-y-4 mt-4">
+              {(urls.length > 1 || (urls.length === 1 && urls[0] !== "")) && (
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-sm font-medium text-gray-700">
+                    登録済みURL
+                  </h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={clearAllUrls}
+                    className="text-red-500 hover:text-red-700 border-red-200 hover:border-red-300"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    クリア
+                  </Button>
+                </div>
+              )}
               <div className="space-y-2">
                 {urls.map((url, index) => (
                   <div key={index} className="flex items-center gap-2">

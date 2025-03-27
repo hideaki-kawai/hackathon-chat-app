@@ -363,7 +363,7 @@ export default function Chat() {
           </Link>
         </Button>
       </div>
-      <Card className="flex-1 flex flex-col shadow-xl border-gray-200">
+      <Card className="flex-1 flex flex-col border-gray-200">
         <CardContent className="flex-1 p-0 overflow-hidden">
           <ChatMessageList className="pb-20">
             {messages.map((message) => (
