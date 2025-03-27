@@ -161,6 +161,7 @@ export default function Chat() {
     navigation.state === "submitting" || navigation.state === "loading";
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [lastEnterPress, setLastEnterPress] = useState<number | null>(null);
 
   // クライアントサイドでのみタイムスタンプを設定する & ローカルストレージからメッセージを取得する
   useEffect(() => {
@@ -287,11 +288,24 @@ export default function Chat() {
     submit(formData, { method: "post", action: "." });
   };
 
-  // エンターキーで送信（シフト+エンターで改行）
+  // エンターキーで送信の処理を変更（エンター2回で送信）
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      formRef.current?.requestSubmit();
+
+      const now = Date.now();
+
+      // 前回のEnterキー押下から500ミリ秒以内に再度押された場合は送信
+      if (lastEnterPress && now - lastEnterPress < 500) {
+        formRef.current?.requestSubmit();
+        setLastEnterPress(null); // 送信後にリセット
+      } else {
+        // 1回目のEnterキー押下を記録
+        setLastEnterPress(now);
+      }
+    } else {
+      // Enter以外のキーが押されたらリセット
+      setLastEnterPress(null);
     }
   };
 
