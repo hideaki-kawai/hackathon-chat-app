@@ -28,8 +28,8 @@ export async function clientAction({ request }: ActionFunctionArgs) {
     localStorage.setItem("url", JSON.stringify(urls));
   }
 
-  // モーダルを閉じる
-  return redirect("/");
+  // モーダルを閉じる（前のページに戻る）
+  return redirect("/chats/new");
 }
 
 export default function UrlModal() {

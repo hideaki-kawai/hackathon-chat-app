@@ -148,41 +148,38 @@ export default function Chat() {
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [urls, setUrls] = useState<string[]>([]);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content: "こんにちは、どのようにお手伝いできますか？",
-      role: "assistant",
-      timestamp: "",
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    // クライアントサイドでのみ実行されるように
+    if (typeof window !== "undefined") {
+      try {
+        const storedMessages = localStorage.getItem("messages");
+        if (storedMessages) {
+          return JSON.parse(storedMessages) as Message[];
+        }
+      } catch (error) {
+        console.error("メッセージの解析に失敗しました:", error);
+      }
+    }
+    // デフォルトメッセージを返す
+    return [
+      {
+        id: "1",
+        content: "こんにちは、どのようにお手伝いできますか？",
+        role: "assistant",
+        timestamp: "",
+      },
+    ];
+  });
   const [inputValue, setInputValue] = useState("");
   const isSubmitting =
     navigation.state === "submitting" || navigation.state === "loading";
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastEnterPress, setLastEnterPress] = useState<number | null>(null);
 
-  // クライアントサイドでのみタイムスタンプを設定する & ローカルストレージからメッセージを取得する
+  // クライアントサイドでのみタイムスタンプを設定する
   useEffect(() => {
-    // ローカルストレージからメッセージを取得
-    const storedMessages = localStorage.getItem("messages");
-    if (storedMessages) {
-      try {
-        const parsedMessages = JSON.parse(storedMessages) as Message[];
-        setMessages(parsedMessages);
-      } catch (error) {
-        console.error("メッセージの解析に失敗しました:", error);
-        // 初期メッセージのタイムスタンプを設定
-        setMessages((prev) =>
-          prev.map((msg, idx) =>
-            idx === 0
-              ? { ...msg, timestamp: new Date().toLocaleTimeString() }
-              : msg
-          )
-        );
-      }
-    } else if (messages[0].timestamp === "") {
-      // ローカルストレージにメッセージがない場合は初期メッセージのタイムスタンプを設定
+    // 初期メッセージのタイムスタンプが空の場合のみ設定
+    if (messages.length > 0 && messages[0].timestamp === "") {
       setMessages((prev) =>
         prev.map((msg, idx) =>
           idx === 0
