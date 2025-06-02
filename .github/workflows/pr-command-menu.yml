@@ -1,0 +1,68 @@
+name: PR Command Menu
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  create-command-menu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: コマンドメニューコメント投稿
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const commandMenu = `
+            ## 🤖 GitHub Actions コマンドメニュー
+
+            このプルリクエストで以下のコマンドを実行できます。コマンドをコメントで投稿してください：
+
+            ### 📋 利用可能なコマンド
+
+            | コマンド | 説明 | 実行方法 |
+            |---------|------|---------|
+            | \`/echo\` | 基本的なエコーテスト | コメントに \`/echo\` と入力 |
+            | \`/test\` | テスト実行のシミュレート | コメントに \`/test\` と入力 |
+            | \`/deploy\` | デプロイプロセスのシミュレート | コメントに \`/deploy\` と入力 |
+            | \`/simple-echo\` | Simple Echo アクションの実行 | コメントに \`/simple-echo\` と入力 |
+
+            ### 🚀 クイック実行ボタン
+
+            以下をコピーしてコメントに貼り付けるだけで実行できます：
+
+            **Echo テスト実行:**
+            \`\`\`
+            /echo
+            \`\`\`
+
+            **テスト実行:**
+            \`\`\`
+            /test
+            \`\`\`
+
+            **Simple Echo実行:**
+            \`\`\`
+            /simple-echo
+            \`\`\`
+
+            **デプロイ実行:**
+            \`\`\`
+            /deploy
+            \`\`\`
+
+            ---
+            💡 **使い方:** 上記のコマンドのいずれかをこのプルリクエストのコメント欄に投稿すると、GitHub Actions が自動実行されます。
+
+            ⚡ **実行状況:** コマンド実行中は 👀 リアクション、完了時は ✅ または ❌ リアクションで結果をお知らせします。
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: commandMenu
+            });
+
+      - name: 成功通知
+        run: |
+          echo "✅ コマンドメニューを PR #${{ github.event.pull_request.number }} に投稿しました"
