@@ -1,0 +1,20 @@
+name: Simple Echo Action
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: "Echo message"
+        required: false
+        default: "Hello from GitHub Actions!"
+
+jobs:
+  echo-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo message
+        run: |
+          echo "🚀 GitHub Actions が実行されました！"
+          echo "メッセージ: ${{ github.event.inputs.message || 'デフォルトメッセージ' }}"
+          echo "実行時刻: $(date)"
+          echo "リポジトリ: ${{ github.repository }}"

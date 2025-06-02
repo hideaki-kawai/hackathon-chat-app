@@ -1,0 +1,114 @@
+name: PR Comment Trigger
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  comment-triggered-echo:
+    # PRのコメントのみを対象とし、特定のコマンドが含まれている場合のみ実行
+    if: |
+      github.event.issue.pull_request && 
+      (contains(github.event.comment.body, '/echo') || 
+       contains(github.event.comment.body, '/test') ||
+       contains(github.event.comment.body, '/deploy'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: リアクション追加（実行開始）
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'eyes'
+            });
+
+      - name: PRの状態確認
+        id: pr-check
+        run: |
+          echo "PR番号: ${{ github.event.issue.number }}"
+          echo "コメント内容: ${{ github.event.comment.body }}"
+          echo "コメント投稿者: ${{ github.event.comment.user.login }}"
+
+      - name: Echo実行（/echoコマンド）
+        if: contains(github.event.comment.body, '/echo')
+        run: |
+          echo "🎯 /echo コマンドが実行されました！"
+          echo "投稿者: ${{ github.event.comment.user.login }}"
+          echo "PR #${{ github.event.issue.number }} でコメントトリガーされました"
+          echo "実行時刻: $(date '+%Y-%m-%d %H:%M:%S')"
+
+      - name: テスト実行（/testコマンド）
+        if: contains(github.event.comment.body, '/test')
+        run: |
+          echo "🧪 /test コマンドが実行されました！"
+          echo "テスト環境での実行をシミュレートしています..."
+          sleep 3
+          echo "✅ テスト完了"
+
+      - name: デプロイ実行（/deployコマンド）
+        if: contains(github.event.comment.body, '/deploy')
+        run: |
+          echo "🚀 /deploy コマンドが実行されました！"
+          echo "デプロイプロセスをシミュレートしています..."
+          sleep 5
+          echo "✅ デプロイ完了"
+
+      - name: 結果コメント投稿
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number
+            });
+
+            const triggerComment = comments.find(comment => 
+              comment.id === context.payload.comment.id
+            );
+
+            const success = '${{ job.status }}' === 'success';
+            const workflowUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+
+            let commandType = 'unknown';
+            if (triggerComment.body.includes('/echo')) commandType = 'echo';
+            else if (triggerComment.body.includes('/test')) commandType = 'test';
+            else if (triggerComment.body.includes('/deploy')) commandType = 'deploy';
+
+            const resultEmoji = success ? '✅' : '❌';
+            const statusText = success ? '成功' : '失敗';
+
+            const commentBody = `
+            **🤖 GitHub Actions 実行結果**
+
+            - **コマンド**: \`/${commandType}\`
+            - **ステータス**: ${resultEmoji} ${statusText}
+            - **実行者**: @${{ github.event.comment.user.login }}
+            - **ワークフロー**: [${{ github.workflow }}](${workflowUrl})
+
+            ${success ? '処理が正常に完了しました。' : 'エラーが発生しました。詳細はワークフローログを確認してください。'}
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: commentBody
+            });
+
+      - name: リアクション更新（完了）
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            // 実行中のリアクションを削除
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: '${{ job.status }}' === 'success' ? '+1' : '-1'
+            });
