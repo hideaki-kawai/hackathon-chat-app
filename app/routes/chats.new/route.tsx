@@ -96,7 +96,6 @@ export async function action({ request }: ActionFunctionArgs) {
       );
     }
   } catch (error: any) {
-    // Zodのバリデーションエラーの場合
     if (error.name === "ZodError" || error.issues) {
       return new Response(
         JSON.stringify({
