@@ -22,9 +22,16 @@ jobs:
             const commandMenu = `
             ## 🤖 GitHub Actions コマンドメニュー
 
-            このプルリクエストで以下のコマンドを実行できます。コマンドをコメントで投稿してください：
+            このプルリクエストで以下のコマンドを実行できます：
 
-            ### 📋 利用可能なコマンド
+            ### 🚀 ワンクリック実行
+
+            **Simple Echo を実行:**
+            [![Simple Echo 実行](https://img.shields.io/badge/🚀_Simple_Echo-実行-brightgreen?style=for-the-badge)](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/workflows/simple-echo.yml)
+
+            ↳ 上のボタンをクリック → 「Run workflow」→ 「Run workflow」で実行
+
+            ### 📋 コメントコマンド
 
             | コマンド | 説明 | 実行方法 |
             |---------|------|---------|
@@ -33,7 +40,7 @@ jobs:
             | \`/deploy\` | デプロイプロセスのシミュレート | コメントに \`/deploy\` と入力 |
             | \`/simple-echo\` | Simple Echo アクションの実行 | コメントに \`/simple-echo\` と入力 |
 
-            ### 🚀 クイック実行ボタン
+            ### 🎯 クイック実行ボタン
 
             以下をコピーしてコメントに貼り付けるだけで実行できます：
 
@@ -56,6 +63,12 @@ jobs:
             \`\`\`
             /deploy
             \`\`\`
+
+            ### 🔄 再実行方法
+
+            1. **Checksタブから**: このPRの「Checks」タブ → 実行したいワークフロー → 「Re-run」
+            2. **コメントで**: 上記のコマンドをコメント投稿
+            3. **直接実行**: 上の緑のボタンから Actions ページへ移動
 
             ---
             💡 **使い方:** 上記のコマンドのいずれかをこのプルリクエストのコメント欄に投稿すると、GitHub Actions が自動実行されます。

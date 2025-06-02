@@ -4,6 +4,11 @@ on:
   issue_comment:
     types: [created]
 
+permissions:
+  pull-requests: write
+  issues: write
+  contents: read
+
 jobs:
   comment-triggered-echo:
     # PRのコメントのみを対象とし、特定のコマンドが含まれている場合のみ実行
@@ -16,15 +21,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: リアクション追加（実行開始）
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.reactions.createForIssueComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: context.payload.comment.id,
-              content: 'eyes'
-            });
+        # uses: actions/github-script@v7
+        # with:
+        #   script: |
+        #     await github.rest.reactions.createForIssueComment({
+        #       owner: context.repo.owner,
+        #       repo: context.repo.repo,
+        #       comment_id: context.payload.comment.id,
+        #       content: 'eyes'
+        #     });
+        run: echo "👀 ワークフローを開始しました"
 
       - name: PRの状態確認
         id: pr-check
@@ -113,14 +119,16 @@ jobs:
             });
 
       - name: リアクション更新（完了）
-        uses: actions/github-script@v7
+        # uses: actions/github-script@v7
+        # if: always()
+        # with:
+        #   script: |
+        #     // 実行中のリアクションを削除
+        #     await github.rest.reactions.createForIssueComment({
+        #       owner: context.repo.owner,
+        #       repo: context.repo.repo,
+        #       comment_id: context.payload.comment.id,
+        #       content: '${{ job.status }}' === 'success' ? '+1' : '-1'
+        #     });
         if: always()
-        with:
-          script: |
-            // 実行中のリアクションを削除
-            await github.rest.reactions.createForIssueComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: context.payload.comment.id,
-              content: '${{ job.status }}' === 'success' ? '+1' : '-1'
-            });
+        run: echo "✅ ワークフロー完了: ${{ job.status }}"
