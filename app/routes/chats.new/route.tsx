@@ -22,6 +22,10 @@ import {
 } from "shared/components/chat/chat-bubble";
 import { useEffect, useRef, useState } from "react";
 
+/**
+ * @param param0 - メタ
+ * @returns メタ
+ */
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "OpenAI Response API Sample App" },
