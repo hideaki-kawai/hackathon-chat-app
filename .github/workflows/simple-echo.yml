@@ -8,6 +8,11 @@ on:
         required: false
         default: "Hello from GitHub Actions!"
 
+permissions:
+  pull-requests: write
+  issues: write
+  contents: read
+
 jobs:
   echo-job:
     runs-on: ubuntu-latest
