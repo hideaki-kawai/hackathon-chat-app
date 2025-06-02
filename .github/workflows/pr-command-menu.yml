@@ -3,6 +3,13 @@ name: PR Command Menu
 on:
   pull_request:
     types: [opened]
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  pull-requests: write
+  issues: write
+  contents: read
 
 jobs:
   create-command-menu:
@@ -59,10 +66,10 @@ jobs:
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number,
+              issue_number: context.payload.pull_request?.number || context.payload.number,
               body: commandMenu
             });
 
       - name: 成功通知
         run: |
-          echo "✅ コマンドメニューを PR #${{ github.event.pull_request.number }} に投稿しました"
+          echo "✅ コマンドメニューを PR #${{ github.event.pull_request.number || github.event.number }} に投稿しました"
