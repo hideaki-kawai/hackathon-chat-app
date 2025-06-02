@@ -29,6 +29,10 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+/**
+ * @param children - 子要素
+ * @returns
+ */
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja">
