@@ -68,6 +68,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * @returns ルート
+ */
 export default function App() {
   return <Outlet />;
 }
