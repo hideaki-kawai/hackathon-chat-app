@@ -65,7 +65,7 @@ jobs:
           echo "実行者: ${{ github.event.comment.user.login }}"
 
       - name: 結果コメント投稿
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         if: always()
         with:
           script: |
